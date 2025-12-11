@@ -1,1 +1,18 @@
-spring.application.name=back-end
+spring:
+  application:
+    name: agro-market
+  datasource:
+    url: jdbc:mysql://${AGRO_DB_HOST:localhost}:${AGRO_DB_PORT:3306}/${AGRO_DB_NAME:agro_market}?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf-8
+    username: ${AGRO_DB_USER:root}
+    password: ${AGRO_DB_PASSWORD:password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jackson:
+    time-zone: Asia/Shanghai
+
+mybatis:
+  type-aliases-package: com.springcloud.backend.model
+  configuration:
+    map-underscore-to-camel-case: true
+
+server:
+  port: 8080

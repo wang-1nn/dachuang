@@ -2,8 +2,8 @@ package com.springcloud.backend.filter;
 
 import com.alibaba.fastjson.JSON;
 import com.auth0.jwt.interfaces.Claim;
-import com.example.demo.util.JWTUtil;
-import com.example.demo.util.RestBean;
+import com.springcloud.backend.util.JWTUtil;
+import com.springcloud.backend.util.RestBean;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,14 +14,12 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * JWT过滤器，拦截 /secure的请求
+ * JWT过滤器：保护业务接口，放行登录注册等公开接口。
  */
 @Slf4j
-@WebFilter(filterName = "JWTFilter", urlPatterns = "/api/*")
+@WebFilter(filterName = "JWTFilter", urlPatterns = "/*")
 public class JWTFilter implements Filter {
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-    }
+    private static final String AUTH_HEADER = "Authorization";
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
@@ -30,43 +28,34 @@ public class JWTFilter implements Filter {
         String requestURI = request.getRequestURI();
 
         response.setCharacterEncoding("UTF-8");
-        //获取 header里的token
-        final String token = request.getHeader("authorization");
 
-        if (requestURI.startsWith("/api")) {
+        // 放行无需鉴权的接口
+        if (requestURI.startsWith("/api/auth/login") || requestURI.startsWith("/api/auth/register") || requestURI.startsWith("/actuator")) {
             chain.doFilter(request, response);
             return;
         }
-        if ("OPTIONS".equals(request.getMethod())) {
+
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_OK);
             chain.doFilter(request, response);
+            return;
         }
-        // Except OPTIONS, other request should be checked by JWT
-        else {
 
-            if (token == null) {
-                response.getWriter().write(JSON.toJSONString(RestBean.failure(401,"未提供token")));
-                return;
-            }
-            System.out.println(token);
-            Map<String, Claim> userData = JWTUtil.verifyToken(token);
-            if (userData == null) {
-                response.getWriter().write(JSON.toJSONString(RestBean.failure(401,"token不合法")));
-                return;
-            }
-            Integer id = userData.get("id").asInt();
-            String username = userData.get("username").asString();
-            String password= userData.get("password").asString();
-
-            //过滤器 拿到用户信息，放到request中
-            request.setAttribute("id", id);
-            request.setAttribute("username", username);
-            request.setAttribute("password", password);
-            chain.doFilter(req, res);
+        final String token = request.getHeader(AUTH_HEADER);
+        if (token == null || token.isBlank()) {
+            response.getWriter().write(JSON.toJSONString(RestBean.failure(401, "未提供token")));
+            return;
         }
-    }
 
-    @Override
-    public void destroy() {
+        Map<String, Claim> userData = JWTUtil.verifyToken(token.replace("Bearer ", ""));
+        if (userData == null) {
+            response.getWriter().write(JSON.toJSONString(RestBean.failure(401, "token不合法")));
+            return;
+        }
+
+        request.setAttribute("id", userData.get("id").asLong());
+        request.setAttribute("username", userData.get("username").asString());
+        request.setAttribute("role", userData.get("role").asString());
+        chain.doFilter(req, res);
     }
 }
