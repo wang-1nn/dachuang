@@ -1,11 +1,9 @@
-package springcloud.backend.util;
+package com.springcloud.backend.util;
 
 import lombok.Data;
 
 /**
- * @author Flyinsky
- * @email w2084151024@gmail.com
- * @date 2024/9/1 11:30
+ * 通用响应包装。
  */
 @Data
 public class RestBean<T> {
@@ -14,7 +12,7 @@ public class RestBean<T> {
     private String message;
     private T data;
 
-    public RestBean(int status, boolean success, String message , T data) {
+    public RestBean(int status, boolean success, String message, T data) {
         this.status = status;
         this.success = success;
         this.message = message;
@@ -22,10 +20,10 @@ public class RestBean<T> {
     }
 
     public static <T> RestBean<T> success(String message) {
-        return new RestBean<>(200, true, message ,null);
+        return new RestBean<>(200, true, message, null);
     }
 
-    public static <T> RestBean<T> success(String message , T data) {
+    public static <T> RestBean<T> success(String message, T data) {
         return new RestBean<>(200, true, message, data);
     }
 

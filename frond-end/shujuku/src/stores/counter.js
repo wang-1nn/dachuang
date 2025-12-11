@@ -18,13 +18,7 @@ export const useUserStore = defineStore('user', {
     // 初始化用户信息
     async initUser() {
       try {
-        // 优先从localStorage拿role
-        let role = localStorage.getItem('role')
-        if (!role && this.userInfo && this.userInfo.role !== undefined) {
-          role = this.userInfo.role
-        }
-        const url = role == 1 ? '/api/admin/info' : '/api/user/info'
-        const response = await get(url)
+        const response = await get('/api/auth/profile')
         if (response && response.data) {
           this.userInfo = response.data
           this.isLoggedIn = true

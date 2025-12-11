@@ -3,21 +3,43 @@ import { useUserStore } from '../stores/counter'
 import { ElMessage } from 'element-plus'
 
 const routes = [
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('../views/LoginView.vue')
+  },
+  {
+    path: '/customer',
+    name: 'customer',
+    component: () => import('../views/CustomerDashboard.vue'),
+    meta: { role: 'CUSTOMER' }
+  },
+  {
+    path: '/merchant',
+    name: 'merchant',
+    component: () => import('../views/MerchantDashboard.vue'),
+    meta: { role: 'MERCHANT' }
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('../views/AdminDashboard.vue'),
+    meta: { role: 'ADMIN' }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/login'
+  }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior(to, from, savedPosition) {
-    if (savedPosition) {
-      return savedPosition
-    } else {
-      return { top: 0 }
-    }
+  scrollBehavior() {
+    return { top: 0 }
   }
 })
 
-// 路由守卫
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
   const token = localStorage.getItem('authToken')
@@ -30,22 +52,12 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
-
+  if (to.meta.role && userStore.userInfo && userStore.userInfo.role !== to.meta.role) {
+    ElMessage.warning('无权限访问该页面')
+    return next('/login')
+  }
 
   next()
-})
-
-// 路由后置钩子
-router.afterEach((to, from) => {
-  if (to.path !== from.path) {
-    const app = document.getElementById('app')
-    if (app) {
-      app.style.display = 'none'
-      setTimeout(() => {
-        app.style.display = ''
-      }, 0)
-    }
-  }
 })
 
 export default router
