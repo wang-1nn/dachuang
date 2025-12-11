@@ -46,6 +46,11 @@ public class OrderServiceImpl implements OrderService {
             item.setProductId(product.getId());
             item.setQuantity(itemRequest.getQuantity());
             item.setPrice(product.getPrice());
+            // 扣减库存（并发安全：仅在库存足够时才会更新）
+            int updated = productMapper.decreaseStock(product.getId(), itemRequest.getQuantity());
+            if (updated == 0) {
+                throw new IllegalStateException("商品库存不足：" + product.getName());
+            }
             total = total.add(product.getPrice().multiply(BigDecimal.valueOf(itemRequest.getQuantity())));
             items.add(item);
         }
@@ -69,5 +74,21 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<Order> listByMerchant(Long merchantId) {
         return orderMapper.findByMerchant(merchantId);
+    }
+
+    @Override
+    public void updateStatus(Long orderId, String status, Long actorId, String actorRole) {
+        Order order = orderMapper.findById(orderId);
+        if (order == null) {
+            throw new IllegalArgumentException("订单不存在");
+        }
+        // 只有管理员或该商家可以更新订单状态（商家id 匹配）
+        if (!"ADMIN".equalsIgnoreCase(actorRole) && !"MERCHANT".equalsIgnoreCase(actorRole)) {
+            throw new SecurityException("没有权限更新订单状态");
+        }
+        if ("MERCHANT".equalsIgnoreCase(actorRole) && !order.getMerchantId().equals(actorId)) {
+            throw new SecurityException("商家无权限更新非自己商家的订单");
+        }
+        orderMapper.updateStatus(orderId, status);
     }
 }

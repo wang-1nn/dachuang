@@ -16,4 +16,10 @@ public interface OrderMapper {
 
     @Select("SELECT * FROM orders WHERE merchant_id=#{merchantId} ORDER BY created_at DESC")
     List<Order> findByMerchant(Long merchantId);
+
+    @Select("SELECT * FROM orders WHERE id=#{id}")
+    Order findById(Long id);
+
+    @Update("UPDATE orders SET status=#{status}, updated_at=NOW() WHERE id=#{id}")
+    void updateStatus(@Param("id") Long id, @Param("status") String status);
 }

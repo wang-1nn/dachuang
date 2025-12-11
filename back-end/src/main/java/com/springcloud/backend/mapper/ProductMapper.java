@@ -20,4 +20,13 @@ public interface ProductMapper {
 
     @Update("UPDATE products SET name=#{name},description=#{description},price=#{price},stock=#{stock},cover=#{cover},updated_at=NOW() WHERE id=#{id}")
     void update(Product product);
+
+    @Select("SELECT * FROM products WHERE id=#{id}")
+    Product findById(Long id);
+
+    @Update("UPDATE products SET stock = stock - #{quantity} WHERE id=#{id} AND stock >= #{quantity}")
+    int decreaseStock(@Param("id") Long id, @Param("quantity") Integer quantity);
+
+    @Delete("DELETE FROM products WHERE id=#{id}")
+    int delete(Long id);
 }

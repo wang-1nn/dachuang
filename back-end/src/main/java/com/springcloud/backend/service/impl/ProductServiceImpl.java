@@ -51,4 +51,17 @@ public class ProductServiceImpl implements ProductService {
         product.setCover(request.getCover());
         productMapper.update(product);
     }
+
+    @Override
+    public void delete(Long productId, Long requesterId, String requesterRole) {
+        Product product = productMapper.findById(productId);
+        if (product == null) {
+            throw new IllegalArgumentException("商品不存在");
+        }
+        // 只有管理员或商品所属商家可以删除
+        if (!"ADMIN".equalsIgnoreCase(requesterRole) && !product.getMerchantId().equals(requesterId)) {
+            throw new SecurityException("没有权限删除该商品");
+        }
+        productMapper.delete(productId);
+    }
 }

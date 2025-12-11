@@ -41,4 +41,12 @@ public class ProductController {
         productService.update(id, request);
         return RestBean.success("更新成功");
     }
+
+    @DeleteMapping("/{id}")
+    public RestBean<Void> delete(@PathVariable("id") Long id, HttpServletRequest request) {
+        Long requesterId = (Long) request.getAttribute("id");
+        String role = (String) request.getAttribute("role");
+        productService.delete(id, requesterId, role);
+        return RestBean.success("删除成功");
+    }
 }

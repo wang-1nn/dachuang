@@ -13,4 +13,6 @@ public interface ProductService {
     Product create(ProductRequest request, Long merchantId);
 
     void update(Long productId, ProductRequest request);
+
+    void delete(Long productId, Long requesterId, String requesterRole);
 }

@@ -11,4 +11,6 @@ public interface OrderService {
     List<Order> listByUser(Long userId);
 
     List<Order> listByMerchant(Long merchantId);
+
+    void updateStatus(Long orderId, String status, Long actorId, String actorRole);
 }

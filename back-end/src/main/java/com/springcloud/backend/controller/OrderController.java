@@ -36,4 +36,12 @@ public class OrderController {
         Long merchantId = (Long) servletRequest.getAttribute("id");
         return RestBean.success("查询成功", orderService.listByMerchant(merchantId));
     }
+
+    @PatchMapping("/{id}/status/{status}")
+    public RestBean<Void> updateStatus(@PathVariable("id") Long id, @PathVariable("status") String status, HttpServletRequest servletRequest) {
+        Long actorId = (Long) servletRequest.getAttribute("id");
+        String role = (String) servletRequest.getAttribute("role");
+        orderService.updateStatus(id, status, actorId, role);
+        return RestBean.success("订单状态已更新");
+    }
 }
